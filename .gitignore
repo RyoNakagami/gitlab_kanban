@@ -2,3 +2,6 @@ SECRET_TOKEN/
 SANDBOX/
 
 __pycache__/
+
+# Files
+*.pyc
