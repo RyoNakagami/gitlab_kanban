@@ -1,3 +1,5 @@
+## Kanban Dashboard: What is it?
+
 
 
 ## Repository構成
@@ -38,7 +40,13 @@ It is assumed that the SECRET_TOKEN directory contains a file in JSON format tha
 The file containing repository URL, project name, and access token information in JSON format exists in the SCERET_TOKEN directory. 
 As pytest runs using this file, please configure the file in advance for each test.
 
-## Tips
+## Features
+### Rollup: `every` and `offset`
+
+- see [polars.Expr.dt.truncate](https://pola-rs.github.io/polars/py-polars/html/reference/expressions/api/polars.Expr.dt.truncate.html)
+
+
+## Appendix: Tips
 
 > Untrack a folder
 

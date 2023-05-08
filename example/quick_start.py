@@ -1,6 +1,8 @@
 
 #%%
 from gitlab_kanban import Kanban
+import polars as pl
+from datetime import datetime
 import json
 
 with open('./SECRET_TOKEN/secret.json', 'r') as f:
@@ -13,10 +15,14 @@ kanban = Kanban(data['gitlab_url'],
 
 
 kanban.get_current_status()
-kanban.df
+
+kanban.visualize()
 
 #%%
-kanban.visualize()
+kanban.df_burndown_cum.filter(
+                                (pl.col('time_index') >= datetime.strptime('2020-04-01')) &
+                                (pl.col('time_index') <= datetime.strptime('2023-05-01'))
+                             )
 
 
 #%%

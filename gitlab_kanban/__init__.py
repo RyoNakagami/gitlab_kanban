@@ -29,7 +29,7 @@ class Kanban:
             issue.save()
 
     
-    def get_current_status(self, save_path=None):
+    def get_current_status(self, every:str='1w',offset: str= None, save_path=None):
         issue_list = self.gl.projects.get(self.gitlab_projectname).issues.list(sort='asc')
         issue_master = []
         todo_label_list = ['work-in-progress', 'review']
@@ -76,7 +76,7 @@ class Kanban:
 
         self.df = self.df.with_columns(
                 pl.col(['created_at','todo_at', 'closed_at'])
-                .dt.truncate(every='1w')
+                .dt.truncate(every=every, offset=offset)
                 )
 
         df_created = (self.df.groupby("created_at").agg(pl.col('point').sum())).rename({"created_at":"time_index", "point":"open"}).drop_nulls()
@@ -87,6 +87,8 @@ class Kanban:
                 df_created.join(df_todo, on='time_index', how='left')
                 .join(df_closed, on='time_index', how='left')
               ).fill_null(0).sort("time_index")
+        
+        self.df_burndown = self.df_burndown.with_columns(pl.col("time_index").cast(pl.Date).alias("time_index"))
 
         self.df_burndown_cum = self.df_burndown.with_columns(pl.col(["open", "todo", "closed"]).cumsum())
 
@@ -99,11 +101,10 @@ class Kanban:
         df_burndown = self.df_burndown.filter(
                             (pl.col('time_index') >= start_datetime) &
                             (pl.col('time_index') <= end_datetime)
-                            ).with_columns(
-                                pl.col("time_index").cast(pl.Date).alias("date_index"))
+                            )
         
         ## first plot 
-        x = df_burndown['date_index']
+        x = df_burndown['time_index']
         y_1, y_1_mean = df_burndown['open'], df_burndown['open'].mean()
         y_2, y_2_mean = df_burndown['todo'], df_burndown['todo'].mean()
         y_3, y_3_mean = df_burndown['closed'], df_burndown['closed'].mean()
