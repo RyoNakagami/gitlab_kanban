@@ -79,20 +79,20 @@ class Kanban:
                 .dt.truncate(every=every, offset=offset)
                 )
 
-        df_created = (self.df.groupby("created_at").agg(pl.col('point').sum())).rename({"created_at":"time_index", "point":"open"}).drop_nulls()
-        df_todo = (self.df.groupby("todo_at").agg(pl.col('point').sum())).rename({"todo_at":"time_index", "point":"todo"}).drop_nulls()
-        df_closed = (self.df.groupby("closed_at").agg(pl.col('point').sum())).rename({"closed_at":"time_index", "point":"closed"}).drop_nulls()
+        df_created = (self.df.groupby("created_at").agg(pl.col('point').sum(),pl.count())).rename({"created_at":"time_index", "point":"open", "count": "open_cnt"}).drop_nulls()
+        df_todo = (self.df.groupby("todo_at").agg(pl.col('point').sum(),pl.count())).rename({"todo_at":"time_index", "point":"todo", "count": "todo_cnt"}).drop_nulls()
+        df_closed = (self.df.groupby("closed_at").agg(pl.col('point').sum(),pl.count())).rename({"closed_at":"time_index", "point":"closed", "count": "closed_cnt"}).drop_nulls()
 
         self.df_burndown = (
                 df_created.join(df_todo, on='time_index', how='left')
                 .join(df_closed, on='time_index', how='left')
-              ).fill_null(0).sort("time_index")
+              ).fill_null(0).sort("time_index").select(['time_index', 'open', 'todo', 'closed', 'open_cnt', 'todo_cnt', 'closed_cnt'])
         
         self.df_burndown = self.df_burndown.with_columns(pl.col("time_index").cast(pl.Date).alias("time_index"))
 
-        self.df_burndown_cum = self.df_burndown.with_columns(pl.col(["open", "todo", "closed"]).cumsum())
+        self.df_burndown_cum = self.df_burndown.with_columns(pl.col(['open', 'todo', 'closed', 'open_cnt', 'todo_cnt', 'closed_cnt']).cumsum())
 
-    def visualize(self, start_string:str=None, end_string:str=None):
+    def visualize(self, plot_type:str='point', start_string:str=None, end_string:str=None):
         
         ## filter
         start_datetime = self.df_burndown['time_index'].min() if start_string is None else datetime.strptime(start_string, "%Y-%m-%d") 
@@ -103,12 +103,30 @@ class Kanban:
                             (pl.col('time_index') <= end_datetime)
                             )
         
-        ## first plot 
+        ## data process
         x = df_burndown['time_index']
-        y_1, y_1_mean = df_burndown['open'], df_burndown['open'].mean()
-        y_2, y_2_mean = df_burndown['todo'], df_burndown['todo'].mean()
-        y_3, y_3_mean = df_burndown['closed'], df_burndown['closed'].mean()
+        
+        if plot_type == 'point':
+            y_1, y_1_mean = df_burndown['open'], df_burndown['open'].mean()
+            y_2, y_2_mean = df_burndown['todo'], df_burndown['todo'].mean()
+            y_3, y_3_mean = df_burndown['closed'], df_burndown['closed'].mean()
 
+            df_burndown_cum = df_burndown.with_columns(pl.col(["open", "todo", "closed"]).cumsum())
+            df_burndown_cum = df_burndown_cum.with_columns(todo = pl.col('todo') + pl.col('closed'))
+            y1_cum, y2_cum, y3_cum = df_burndown_cum['open'], df_burndown_cum['todo'], df_burndown_cum['closed']
+
+        
+        elif plot_type == 'count':
+            y_1, y_1_mean = df_burndown['open_cnt'], df_burndown['open_cnt'].mean()
+            y_2, y_2_mean = df_burndown['todo_cnt'], df_burndown['todo_cnt'].mean()
+            y_3, y_3_mean = df_burndown['closed_cnt'], df_burndown['closed_cnt'].mean()
+
+            df_burndown_cum = df_burndown.with_columns(pl.col(["open_cnt", "todo_cnt", "closed_cnt"]).cumsum())
+            df_burndown_cum = df_burndown_cum.with_columns(todo_cnt = pl.col('todo_cnt') + pl.col('closed_cnt'))
+
+            y1_cum, y2_cum, y3_cum = df_burndown_cum['open_cnt'], df_burndown_cum['todo_cnt'], df_burndown_cum['closed_cnt']
+
+        ## first plot
         open_mean_line = go.Scatter(x=[x[0], x[-1]], y=[y_1_mean, y_1_mean], 
                        mode='lines',
                        line=dict(dash='dot')
@@ -142,12 +160,10 @@ class Kanban:
         fig.update_layout(width=1000, height=400, showlegend=False, xaxis=dict(type='date'))
 
         ## plot second
-        df_burndown_cum = df_burndown.with_columns(pl.col(["open", "todo", "closed"]).cumsum())
-        df_burndown_cum = df_burndown_cum.with_columns(todo = pl.col('todo') + pl.col('closed'))
 
-        open_cum = go.Scatter(x=df_burndown_cum['time_index'], y=df_burndown_cum['open'], mode='lines', name='open',fill='tonexty')
-        todo_cum = go.Scatter(x=df_burndown_cum['time_index'], y=df_burndown_cum['todo'], mode='lines', name='todo',fill='tonexty')
-        closed_cum = go.Scatter(x=df_burndown_cum['time_index'], y=df_burndown_cum['closed'], mode='lines', name='closed',fill='tonexty')
+        open_cum = go.Scatter(x=x, y=y1_cum, mode='lines', name='open',fill='tonexty')
+        todo_cum = go.Scatter(x=x, y=y2_cum, mode='lines', name='todo',fill='tonexty')
+        closed_cum = go.Scatter(x=x, y=y3_cum, mode='lines', name='closed',fill='tonexty')
 
         fig_cum = go.Figure(data=[closed_cum, todo_cum, open_cum]) #NOTE: 小さい順
         fig_cum.update_layout(title='Cumulative flow diagram', xaxis=dict(type='date'), xaxis_title='sprint', yaxis_title='cumulative point')

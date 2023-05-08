@@ -19,9 +19,12 @@ kanban.get_current_status()
 kanban.visualize()
 
 #%%
+
+
+#%%
 kanban.df_burndown_cum.filter(
-                                (pl.col('time_index') >= datetime.strptime('2020-04-01')) &
-                                (pl.col('time_index') <= datetime.strptime('2023-05-01'))
+                                (pl.col('time_index') >= datetime.strptime('2020-04-01',  "%Y-%m-%d")) &
+                                (pl.col('time_index') <= datetime.strptime('2023-05-01',  "%Y-%m-%d"))
                              )
 
 
