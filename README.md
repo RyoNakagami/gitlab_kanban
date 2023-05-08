@@ -37,3 +37,13 @@ It is assumed that the SECRET_TOKEN directory contains a file in JSON format tha
 
 The file containing repository URL, project name, and access token information in JSON format exists in the SCERET_TOKEN directory. 
 As pytest runs using this file, please configure the file in advance for each test.
+
+## Tips
+
+> Untrack a folder
+
+To exclude a specific folder from being tracked by git, you can use the following command:
+
+```zsh
+% git rm -r --cached <target folder>
+```

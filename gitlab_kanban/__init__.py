@@ -16,21 +16,18 @@ class Kanban:
     def __post_init__(self):
         self.gl = gitlab.Gitlab(self.gitlab_url,
                            self.access_token)
-        try:
-            ## auth check
-            self.gl.auth()
+        ## auth check
+        self.gl.auth()
+        
+        ## refreshed the board
+        confirmed_issue = self.gl.projects.get(
+                                    self.gitlab_projectname
+                             ).issues.list(labels=['confirmed'])
+        for issue in confirmed_issue:
+            issue.labels.remove('confirmed')
+            issue.state_event = 'close'
+            issue.save()
 
-            ## refreshed the board
-            confirmed_issue = self.gl.projects.get(
-                                        self.gitlab_projectname
-                                 ).issues.list(labels=['confirmed'])
-            for issue in confirmed_issue:
-                issue.labels.remove('confirmed')
-                issue.state_event = 'close'
-                issue.save()
-
-        except Exception as e:
-            print(e)
     
     def get_current_status(self, save_path=None):
         issue_list = self.gl.projects.get(self.gitlab_projectname).issues.list(sort='asc')
@@ -65,7 +62,7 @@ class Kanban:
                     .with_columns(
                      pl.col(['created_at','todo_at', 'closed_at'])
                      .str.strptime(pl.Datetime(time_zone='Asia/Tokyo'),
-                                   fmt="%Y-%m-%dT%H:%M:%S%.fZ",
+                                   "%Y-%m-%dT%H:%M:%S%.fZ",
                                    strict=False),
                                   )
                    ).with_columns(

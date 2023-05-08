@@ -11,8 +11,15 @@ kanban = Kanban(data['gitlab_url'],
                 data['gitlab_projectname'], 
                 data['access_token'])
 
+
 kanban.get_current_status()
 kanban.df
 
 #%%
 kanban.visualize()
+
+
+#%%
+Kanban(data['gitlab_url'], 
+                data['gitlab_projectname'], 
+                'hoge')
