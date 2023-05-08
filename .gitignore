@@ -1,2 +1,4 @@
 SECRET_TOKEN/
 SANDBOX/
+
+__pycache__/
