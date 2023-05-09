@@ -1,11 +1,16 @@
 ## Kanban Dashboard: What is it?
 
 
+## Requirements
+### Gitlab Access Token
+
+To use the `gitlab_kanban`, it is necessary to obtain an access token, which serves as a form of authentication. 
+To create an access token, you can open the "Access Tokens" page from your profile on GitLab. From there, you can specify the token's name, scope, and expiration date, and generate the token. Once you have an access token, you can use it in your API requests to authenticate and access GitLab's resources.
 
 
 
 
-## Repository構成
+## Repository
 
 ```
 .
