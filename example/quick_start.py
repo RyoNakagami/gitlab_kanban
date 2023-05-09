@@ -14,21 +14,18 @@ kanban = Kanban(data['gitlab_url'],
                 data['access_token'])
 
 
-kanban.get_current_status()
+kanban.get_current_status(every='1w',offset='1d')
 
 kanban.visualize()
+#kanban.visualize(plot_type='count')
+#%%
+kanban.visualize(start_string='2023-04-20')
 
 #%%
-
+kanban.df_burnup
 
 #%%
-kanban.df_burndown_cum.filter(
+kanban.df_burnup_cum.filter(
                                 (pl.col('time_index') >= datetime.strptime('2020-04-01',  "%Y-%m-%d")) &
                                 (pl.col('time_index') <= datetime.strptime('2023-05-01',  "%Y-%m-%d"))
                              )
-
-
-#%%
-Kanban(data['gitlab_url'], 
-                data['gitlab_projectname'], 
-                'hoge')
