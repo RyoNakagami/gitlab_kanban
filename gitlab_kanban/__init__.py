@@ -123,7 +123,6 @@ class Kanban:
 
             df_burnup_cum = df_burnup.with_columns(pl.col(["open_cnt", "todo_cnt", "closed_cnt"]).cumsum())
             df_burnup_cum = df_burnup_cum.with_columns(todo_cnt = pl.col('todo_cnt') + pl.col('closed_cnt'))
-
             y1_cum, y2_cum, y3_cum = df_burnup_cum['open_cnt'], df_burnup_cum['todo_cnt'], df_burnup_cum['closed_cnt']
 
         ## first plot

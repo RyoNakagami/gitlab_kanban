@@ -52,6 +52,10 @@ To create an access token, you can open the "Access Tokens" page from your profi
     └── test_gitlab_kanban.py
 ```
 
+I just created the repository by using `poetry new` command, so the structure is 
+based on the Poetry default setup.
+
+
 ### SCERET_TOKEN setup
 
 It is assumed that the SECRET_TOKEN directory contains a file in JSON format that stores information on the repository URL, project name, and access token.
@@ -82,3 +86,4 @@ To exclude a specific folder from being tracked by git, you can use the followin
 ```zsh
 % git rm -r --cached <target folder>
 ```
+

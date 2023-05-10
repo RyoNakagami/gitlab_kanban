@@ -2,6 +2,8 @@ SECRET_TOKEN/
 SANDBOX/
 
 __pycache__/
+.venv/
+.pytest_cache/
 
 # Files
 *.pyc

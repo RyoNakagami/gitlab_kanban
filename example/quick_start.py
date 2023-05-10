@@ -16,16 +16,20 @@ kanban = Kanban(data['gitlab_url'],
 
 kanban.get_current_status(every='1w',offset='1d')
 
-kanban.visualize()
+#kanban.visualize()
 #kanban.visualize(plot_type='count')
 #%%
-kanban.visualize(start_string='2023-04-20')
+kanban.visualize(start_string='2023-04-01')
 
 #%%
-kanban.df_burnup
+kanban.df_burnup.filter(
+   (pl.col('time_index') >= datetime.strptime('2020-04-01',  "%Y-%m-%d")) &
+   (pl.col('time_index') <= datetime.strptime('2023-05-09',  "%Y-%m-%d"))
+)
+
 
 #%%
 kanban.df_burnup_cum.filter(
-                                (pl.col('time_index') >= datetime.strptime('2020-04-01',  "%Y-%m-%d")) &
-                                (pl.col('time_index') <= datetime.strptime('2023-05-01',  "%Y-%m-%d"))
-                             )
+        (pl.col('time_index') >= datetime.strptime('2020-04-01',  "%Y-%m-%d")) &
+        (pl.col('time_index') <= datetime.strptime('2023-05-09',  "%Y-%m-%d"))
+        )
